@@ -1,73 +1,80 @@
 import tkinter as tk
+from tkinter import font as tkfont
 
-def click_btn(event):
-    global expression
-    text = event.widget.cget("text")
-    
-    if text == "=":
+class Calculadora:
+    def __init__(self):
+        self.janela = tk.Tk()
+        self.janela.title("Calculadora do Lucas")
+        self.janela.geometry("300x400")
+        self.janela.resizable(0, 0)
+        self.janela.configure(bg='#333')
+
+        self.font_style = tkfont.Font(family='Helvetica', size=15, weight='bold')
+        self.entry_font_style = tkfont.Font(family='Helvetica', size=20, weight='bold')
+
+        self.entrada = tk.Entry(self.janela, width=16, font=self.entry_font_style, bd=10, insertwidth=2, bg="#eee", justify='right')
+        self.entrada.grid(row=0, column=0, columnspan=4, pady=10, padx=10)
+        self.entrada.bind('<Return>', lambda event: self.calcula())  # Vincula a tecla Enter ao cálculo
+
+        botoes = [
+            ('7', 1, 0), ('8', 1, 1), ('9', 1, 2), ('/', 1, 3),
+            ('4', 2, 0), ('5', 2, 1), ('6', 2, 2), ('*', 2, 3),
+            ('1', 3, 0), ('2', 3, 1), ('3', 3, 2), ('-', 3, 3),
+            ('0', 4, 0), (',', 4, 1), ('+', 4, 2), ('=', 4, 3),
+            ('C', 5, 0, 4)
+        ]
+
+        for botao in botoes:
+            if len(botao) == 3:
+                texto, linha, coluna = botao
+                colspan = 1
+            else:
+                texto, linha, coluna, colspan = botao
+
+            if texto == '=':
+                bg_color = "#ff5733"
+                fg_color = "#fff"
+            elif texto == 'C':
+                bg_color = "#ff3333"
+                fg_color = "#fff"
+            else:
+                bg_color = "#555"
+                fg_color = "#fff"
+            
+            button = tk.Button(self.janela, text=texto, width=5, height=2, font=self.font_style, bg=bg_color, fg=fg_color,
+                               command=lambda t=texto: self.click(t))
+            button.grid(row=linha, column=coluna, columnspan=colspan, sticky='nsew', padx=5, pady=5)
+
+        for i in range(6):
+            self.janela.grid_rowconfigure(i, weight=1)
+            self.janela.grid_columnconfigure(i, weight=1)
+
+    def click(self, texto):
+        if texto == '=':
+            self.calcula()
+        elif texto == 'C':
+            self.limpar()
+        else:
+            self.adiciona_digito(texto)
+
+    def adiciona_digito(self, digito):
+        self.entrada.insert(tk.END, digito)
+
+    def calcula(self):
         try:
-            result = eval(expression)
-            expression = str(result)
-        except Exception as e:
-            expression = "Erro"
-        finally:
-            update_display()
-    elif text == "C":
-        expression = ""
-        update_display()
-    else:
-        expression += text
-        update_display()
+            resultado = eval(self.entrada.get().replace(",", "."))
+            self.entrada.delete(0, tk.END)
+            self.entrada.insert(tk.END, str(resultado))
+        except Exception:
+            self.entrada.delete(0, tk.END)
+            self.entrada.insert(tk.END, "Erro")
 
-def key_press(event):
-    global expression
-    key = event.char
-    if key.isdigit() or key in "+-*/":
-        expression += key
-        update_display()
-    elif key == "\r" or key == "\n":
-        try:
-            result = eval(expression)
-            expression = str(result)
-        except Exception as e:
-            expression = "Erro"
-        finally:
-            update_display()
+    def limpar(self):
+        self.entrada.delete(0, tk.END)
 
-def update_display():
-    display_var.set(expression)
+    def run(self):
+        self.janela.mainloop()
 
-# Criar a janela
-window = tk.Tk()
-window.title("Calculadora Básica")
-
-# Variável para armazenar a expressão
-expression = ""
-
-# Variável para atualizar o display
-display_var = tk.StringVar()
-display_var.set("")
-
-# Criar o display
-display = tk.Entry(window, textvariable=display_var, font=("Arial", 18), bd=10, justify="right")
-display.grid(row=0, column=0, columnspan=4)
-
-# Botões da calculadora
-buttons = [
-    ('7', 1, 0), ('8', 1, 1), ('9', 1, 2), ('/', 1, 3),
-    ('4', 2, 0), ('5', 2, 1), ('6', 2, 2), ('*', 2, 3),
-    ('1', 3, 0), ('2', 3, 1), ('3', 3, 2), ('-', 3, 3),
-    ('0', 4, 0), ('C', 4, 1), ('=', 4, 2), ('+', 4, 3)
-]
-
-# Adicionar botões à janela
-for (text, row, col) in buttons:
-    btn = tk.Button(window, text=text, font=("Arial", 18), width=5, height=2)
-    btn.grid(row=row, column=col)
-    btn.bind("<Button-1>", click_btn)
-
-# Vincular eventos de teclado
-window.bind("<Key>", key_press)
-
-# Rodar a aplicação
-window.mainloop()
+if __name__ == "__main__":
+    calculadora = Calculadora()
+    calculadora.run()
