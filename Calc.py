@@ -25,7 +25,7 @@ def key_press(event):
     if key.isdigit() or key in "+-*/":
         expression += key
         update_display()
-    elif key == "\r":
+    elif key == "\r" or key == "\n":
         try:
             result = eval(expression)
             expression = str(result)
